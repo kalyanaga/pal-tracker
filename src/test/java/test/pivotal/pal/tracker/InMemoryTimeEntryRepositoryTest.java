@@ -75,7 +75,7 @@ public class InMemoryTimeEntryRepositoryTest {
         long projectId = 123L;
         long userId = 456L;
         TimeEntry created = repo.create(new TimeEntry(projectId, userId, LocalDate.parse("2017-01-08"), 8));
-
+        System.out.print(" test delete "+created);
         repo.delete(created.getId());
         assertThat(repo.list()).isEmpty();
     }
