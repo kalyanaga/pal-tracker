@@ -52,9 +52,9 @@ public class TimeEntryController {
 
        TimeEntry dupEntry = timeEntryRepository.update(timeEntryId,expected);
        if(dupEntry!=null)
-        return  new ResponseEntity<>(expected, HttpStatus.OK);
+        return  new ResponseEntity<>(dupEntry, HttpStatus.OK);
 
-        return  new ResponseEntity<>(expected, HttpStatus.NOT_FOUND);
+        return  new ResponseEntity<>(dupEntry, HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/time-entries/{timeEntryId}")

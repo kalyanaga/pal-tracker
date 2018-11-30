@@ -1,8 +1,10 @@
 package test.pivotal.pal.trackerapi;
 
 import com.jayway.jsonpath.DocumentContext;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import io.pivotal.pal.tracker.PalTrackerApplication;
 import io.pivotal.pal.tracker.TimeEntry;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.TimeZone;
 
 import static com.jayway.jsonpath.JsonPath.parse;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,14 +93,10 @@ public class TimeEntryApiTest {
         long projectId = 2L;
         long userId = 3L;
         TimeEntry updatedTimeEntry = new TimeEntry(projectId, userId, LocalDate.parse("2017-01-09"), 9);
-
-
         ResponseEntity<String> updateResponse = restTemplate.exchange("/time-entries/" + id, HttpMethod.PUT, new HttpEntity<>(updatedTimeEntry, null), String.class);
-
-
         assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-
         DocumentContext updateJson = parse(updateResponse.getBody());
+        System.out.println(updateJson.toString());
         assertThat(updateJson.read("$.id", Long.class)).isEqualTo(id);
         assertThat(updateJson.read("$.projectId", Long.class)).isEqualTo(projectId);
         assertThat(updateJson.read("$.userId", Long.class)).isEqualTo(userId);
@@ -126,5 +126,16 @@ public class TimeEntryApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         return response.getBody().getId();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        MysqlDataSource dataSource = new MysqlDataSource();
+        dataSource.setUrl(System.getenv("SPRING_DATASOURCE_URL"));
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.execute("TRUNCATE time_entries");
+
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 }
